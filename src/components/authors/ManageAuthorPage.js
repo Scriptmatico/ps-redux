@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import AuthorForm from './AuthorForm';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { loadAuthors } from '../../redux/actions/authorActions';
+import { loadAuthors, saveAuthor } from '../../redux/actions/authorActions';
 import Spinner from '../common/Spinner';
+import { toast } from 'react-toastify';
+import { Prompt } from 'react-router-dom';
 
-const ManageAuthorPage = ({ loadAuthors, authors, ...props }) => {
+const ManageAuthorPage = ({ loadAuthors, saveAuthor, authors, ...props }) => {
   const [author, setAuthor] = useState({ ...props.author });
-  console.log('props.author', props.author);
-  console.log('state.author', author);
+  const [formSaved, setFormSaved] = useState(true);
 
   useEffect(() => {
     if (authors.length === 0) {
@@ -18,7 +19,7 @@ const ManageAuthorPage = ({ loadAuthors, authors, ...props }) => {
     } else {
       setAuthor({ ...props.author });
     }
-  }, [props.author]);
+  }, [authors.length]);
 
   const handleNameChange = event => {
     const { name, value } = event.target;
@@ -27,12 +28,30 @@ const ManageAuthorPage = ({ loadAuthors, authors, ...props }) => {
       ...prevAuthor,
       [name]: value,
     }));
+
+    if (formSaved) setFormSaved(false);
+  };
+
+  const handleAuthorSave = event => {
+    event.preventDefault();
+    saveAuthor(author).then(() => {
+      setFormSaved(true);
+      props.history.push('/authors');
+      toast.success('Author saved!');
+    });
   };
 
   return props.loading ? (
     <Spinner />
   ) : (
-    <AuthorForm author={author} onNameChange={handleNameChange} />
+    <>
+      <Prompt when={!formSaved} message="Changes are not saved. Leave page?" />
+      <AuthorForm
+        author={author}
+        onNameChange={handleNameChange}
+        onSave={handleAuthorSave}
+      />
+    </>
   );
 };
 
@@ -40,14 +59,15 @@ ManageAuthorPage.propTypes = {
   author: PropTypes.object.isRequired,
   authors: PropTypes.array.isRequired,
   loadAuthors: PropTypes.func.isRequired,
+  saveAuthor: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
+  history: PropTypes.object.isRequired,
 };
 
 const findAuthorById = (authors, authorId) =>
   authors.find(author => author.id === authorId) || null;
 
 const mapStateToProps = (state, ownProps) => {
-  console.log('mapStateToProps called');
   const authorId = ownProps.match.params.authorId;
   const author =
     authorId && state.authors.length > 0
@@ -63,6 +83,7 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispathToProps = {
   loadAuthors,
+  saveAuthor,
 };
 
 export default connect(mapStateToProps, mapDispathToProps)(ManageAuthorPage);

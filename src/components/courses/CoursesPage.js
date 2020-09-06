@@ -8,10 +8,12 @@ import CourseList from './CourseList';
 import { Redirect } from 'react-router-dom';
 import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
+import TextInput from '../common/TextInput';
 
 class CoursesPage extends React.Component {
   state = {
     redirectToAddCoursePage: false,
+    filterValue: '',
   };
 
   componentDidMount() {
@@ -40,6 +42,11 @@ class CoursesPage extends React.Component {
     }
   };
 
+  handleFilterCourse = event => {
+    const { value } = event.target;
+    this.setState({ filterValue: value });
+  };
+
   render() {
     return (
       <>
@@ -58,10 +65,21 @@ class CoursesPage extends React.Component {
             </button>
 
             {this.props.courses.length > 0 && (
-              <CourseList
-                onDeleteClick={this.handleDeleteCourse}
-                courses={this.props.courses}
-              />
+              <>
+                <TextInput
+                  name="filter"
+                  label=""
+                  placeholder="Filter by title"
+                  onChange={this.handleFilterCourse}
+                  value={this.state.filterValue}
+                />
+
+                <CourseList
+                  onDeleteClick={this.handleDeleteCourse}
+                  courses={this.props.courses}
+                  filterValue={this.state.filterValue}
+                />
+              </>
             )}
           </>
         )}

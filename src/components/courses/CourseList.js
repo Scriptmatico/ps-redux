@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-const CourseList = ({ courses, onDeleteClick }) => (
+const CourseList = ({ courses, filterValue = '', onDeleteClick }) => (
   <table className="table">
     <thead>
       <tr>
@@ -15,7 +15,8 @@ const CourseList = ({ courses, onDeleteClick }) => (
     </thead>
     <tbody>
       {courses.map(course => {
-        return (
+        return course.title.toLowerCase().indexOf(filterValue.toLowerCase()) >=
+          0 ? (
           <tr key={course.id}>
             <td>
               <a
@@ -39,7 +40,7 @@ const CourseList = ({ courses, onDeleteClick }) => (
               </button>
             </td>
           </tr>
-        );
+        ) : null;
       })}
     </tbody>
   </table>
@@ -48,6 +49,7 @@ const CourseList = ({ courses, onDeleteClick }) => (
 CourseList.propTypes = {
   courses: PropTypes.array.isRequired,
   onDeleteClick: PropTypes.func.isRequired,
+  filterValue: PropTypes.string,
 };
 
 export default CourseList;

@@ -7,6 +7,7 @@ import CourseForm from './CourseForm';
 import { newCourse } from '../../../tools/mockData';
 import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
+import { Prompt } from 'react-router-dom';
 
 export function ManageCoursePage({
   courses,
@@ -20,9 +21,7 @@ export function ManageCoursePage({
   const [course, setCourse] = useState({ ...props.course });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-
-  console.log('props.course', props.course);
-  console.log('state.course', course);
+  const [formSaved, setFormSaved] = useState(true);
 
   useEffect(() => {
     if (courses.length === 0) {
@@ -46,6 +45,8 @@ export function ManageCoursePage({
       ...prevCourse,
       [name]: name === 'authorId' ? parseInt(value, 10) : value,
     }));
+
+    if (formSaved) setFormSaved(false);
   }
 
   function formIsValid() {
@@ -65,8 +66,10 @@ export function ManageCoursePage({
     if (!formIsValid()) return;
 
     setSaving(true);
+
     saveCourse(course)
       .then(() => {
+        setFormSaved(true);
         toast.success('Course saved.');
         history.push('/courses');
       })
@@ -79,14 +82,20 @@ export function ManageCoursePage({
   return props.loading ? (
     <Spinner />
   ) : (
-    <CourseForm
-      course={course}
-      errors={errors}
-      authors={authors}
-      onChange={handleChange}
-      onSave={handleSave}
-      saving={saving}
-    />
+    <>
+      <Prompt
+        when={!formSaved}
+        message="Changes are not saved. Leave the page?"
+      />
+      <CourseForm
+        course={course}
+        errors={errors}
+        authors={authors}
+        onChange={handleChange}
+        onSave={handleSave}
+        saving={saving}
+      />
+    </>
   );
 }
 
@@ -106,7 +115,6 @@ function getCourseBySlug(courses, slug) {
 }
 
 function mapStateToProps(state, ownProps) {
-  console.log('mapStateToProps called');
   const slug = ownProps.match.params.slug;
   const course =
     slug && state.courses.length > 0
