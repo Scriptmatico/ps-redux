@@ -18,6 +18,14 @@ export function deleteAuthorOptimistic(author) {
   return { type: types.DELETE_AUTHOR_OPTIMISTIC, author };
 }
 
+export function gotoPageSuccess(pageNumber) {
+  return { type: types.PAGINATION_AUTHORS_PAGE, pageNumber };
+}
+
+export function updateItemsPerPageSuccess(itemsPerPage) {
+  return { type: types.PAGINATION_AUTHORS_ITEMSPERPAGE, itemsPerPage };
+}
+
 export function loadAuthors() {
   return function (dispatch) {
     dispatch(beginApiCall());
@@ -54,5 +62,17 @@ export function deleteAuthor(author) {
   return function (dispatch) {
     dispatch(deleteAuthorOptimistic(author));
     return authorApi.deleteAuthor(author.id);
+  };
+}
+
+export function gotoPage(pageNumber) {
+  return function (dispatch) {
+    dispatch(gotoPageSuccess(pageNumber));
+  };
+}
+
+export function updateItemsPerPage(totalItems) {
+  return function (dispatch) {
+    dispatch(updateItemsPerPageSuccess(totalItems));
   };
 }

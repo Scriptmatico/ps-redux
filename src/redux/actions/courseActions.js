@@ -18,6 +18,14 @@ export function deleteCourseOptimistic(course) {
   return { type: types.DELETE_COURSE_OPTIMISTIC, course };
 }
 
+export function gotoPageSuccess(pageNumber) {
+  return { type: types.PAGINATION_COURSES_PAGE, pageNumber };
+}
+
+export function updateItemsPerPageSuccess(itemsPerPage) {
+  return { type: types.PAGINATION_COURSES_ITEMSPERPAGE, itemsPerPage };
+}
+
 export function loadCourses() {
   return function (dispatch) {
     dispatch(beginApiCall());
@@ -54,5 +62,17 @@ export function deleteCourse(course) {
   return function (dispatch) {
     dispatch(deleteCourseOptimistic(course));
     return courseApi.deleteCourse(course.id);
+  };
+}
+
+export function gotoPage(pageNumber) {
+  return function (dispatch) {
+    dispatch(gotoPageSuccess(pageNumber));
+  };
+}
+
+export function updateItemsPerPage(totalItems) {
+  return function (dispatch) {
+    dispatch(updateItemsPerPageSuccess(totalItems));
   };
 }

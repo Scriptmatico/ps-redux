@@ -7,11 +7,21 @@ import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
 import { Prompt } from 'react-router-dom';
 
-const ManageAuthorPage = ({ loadAuthors, saveAuthor, authors, ...props }) => {
+const ManageAuthorPage = ({
+  loadAuthors,
+  saveAuthor,
+  authors,
+  redirectTo404,
+  history,
+  ...props
+}) => {
   const [author, setAuthor] = useState({ ...props.author });
   const [formSaved, setFormSaved] = useState(true);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    redirectTo404 && history.push('/not-found');
+
     if (authors.length === 0) {
       loadAuthors().catch(error => {
         alert('Loading authors failed: ' + error);
@@ -34,11 +44,29 @@ const ManageAuthorPage = ({ loadAuthors, saveAuthor, authors, ...props }) => {
 
   const handleAuthorSave = event => {
     event.preventDefault();
-    saveAuthor(author).then(() => {
-      setFormSaved(true);
-      props.history.push('/authors');
-      toast.success('Author saved!');
-    });
+
+    if (!formIsValid()) return;
+
+    saveAuthor(author)
+      .then(() => {
+        setFormSaved(true);
+        history.push('/authors');
+        toast.success('Author saved!');
+      })
+      .catch(error => {
+        setErrors({ onSave: error.message });
+        setFormSaved(false);
+      });
+  };
+
+  const formIsValid = () => {
+    const { name } = author;
+    const errors = {};
+
+    if (!name) errors.name = 'Name is required';
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   return props.loading ? (
@@ -50,6 +78,7 @@ const ManageAuthorPage = ({ loadAuthors, saveAuthor, authors, ...props }) => {
         author={author}
         onNameChange={handleNameChange}
         onSave={handleAuthorSave}
+        errors={errors}
       />
     </>
   );
@@ -62,6 +91,7 @@ ManageAuthorPage.propTypes = {
   saveAuthor: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   history: PropTypes.object.isRequired,
+  redirectTo404: PropTypes.bool.isRequired,
 };
 
 const findAuthorById = (authors, authorId) =>
@@ -78,6 +108,7 @@ const mapStateToProps = (state, ownProps) => {
     author,
     authors: state.authors,
     loading: state.apiCallsInProgress > 0,
+    redirectTo404: !author,
   };
 };
 

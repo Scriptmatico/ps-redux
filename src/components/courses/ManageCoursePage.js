@@ -16,6 +16,7 @@ export function ManageCoursePage({
   loadCourses,
   saveCourse,
   history,
+  redirectTo404,
   ...props
 }) {
   const [course, setCourse] = useState({ ...props.course });
@@ -24,6 +25,8 @@ export function ManageCoursePage({
   const [formSaved, setFormSaved] = useState(true);
 
   useEffect(() => {
+    redirectTo404 && history.push('/not-found');
+
     if (courses.length === 0) {
       loadCourses().catch(error => {
         alert('Loading courses failed: ' + error);
@@ -31,13 +34,15 @@ export function ManageCoursePage({
     } else {
       setCourse({ ...props.course });
     }
+  }, [props.course]);
 
+  useEffect(() => {
     if (authors.length === 0) {
       loadAuthors().catch(error => {
         alert('Loading authors failed: ' + error);
       });
     }
-  }, [props.course]);
+  }, [authors.length]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -108,6 +113,7 @@ ManageCoursePage.propTypes = {
   saveCourse: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
+  redirectTo404: PropTypes.bool.isRequired,
 };
 
 function getCourseBySlug(courses, slug) {
@@ -126,6 +132,7 @@ function mapStateToProps(state, ownProps) {
     courses: state.courses,
     authors: state.authors,
     loading: state.apiCallsInProgress > 0,
+    redirectTo404: !course,
   };
 }
 

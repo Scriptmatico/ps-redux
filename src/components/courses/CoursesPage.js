@@ -17,14 +17,21 @@ class CoursesPage extends React.Component {
   };
 
   componentDidMount() {
-    const { courses, authors, actions } = this.props;
+    this.fetchCourses();
+    this.fetchAuthors();
+  }
 
+  fetchCourses() {
+    const { courses, actions } = this.props;
     if (courses.length === 0) {
       actions.loadCourses().catch(error => {
         alert('Loading courses failed: ' + error);
       });
     }
+  }
 
+  fetchAuthors() {
+    const { authors, actions } = this.props;
     if (authors.length === 0) {
       actions.loadAuthors().catch(error => {
         alert('Loading authors failed: ' + error);
@@ -38,6 +45,7 @@ class CoursesPage extends React.Component {
     try {
       await this.props.actions.deleteCourse(course);
     } catch (error) {
+      this.fetchCourses();
       toast.error('Delete failed. ' + error.message, { autoClose: false });
     }
   };
@@ -45,6 +53,30 @@ class CoursesPage extends React.Component {
   handleFilterCourse = event => {
     const { value } = event.target;
     this.setState({ filterValue: value });
+  };
+
+  handlePageClick = pageNumber => {
+    const { actions } = this.props;
+    actions.gotoPage(pageNumber);
+  };
+
+  handlePreviousClick = () => {
+    const { actions, pagination } = this.props;
+    pagination.activePage - 1 > 0 &&
+      actions.gotoPage(pagination.activePage - 1);
+  };
+
+  handleNextClick = () => {
+    const { actions, pagination, courses } = this.props;
+    pagination.activePage + 1 <=
+      Math.ceil(courses.length / pagination.itemsPerPage) &&
+      actions.gotoPage(pagination.activePage + 1);
+  };
+
+  handleItemsPerPage = e => {
+    const { actions } = this.props;
+    const totalItemsSelected = parseInt(e.target.value);
+    actions.updateItemsPerPage(totalItemsSelected);
   };
 
   render() {
@@ -55,33 +87,49 @@ class CoursesPage extends React.Component {
         {this.props.loading ? (
           <Spinner />
         ) : (
-          <>
-            <button
-              style={{ marginBottom: 20 }}
-              className="btn btn-primary add-course"
-              onClick={() => this.setState({ redirectToAddCoursePage: true })}
-            >
-              Add Course
-            </button>
+          <div className="container">
+            <br />
+            <div className="row">
+              <div className="col align-self-start">
+                <button
+                  style={{ marginBottom: 20 }}
+                  className="btn btn-primary add-course"
+                  onClick={() =>
+                    this.setState({ redirectToAddCoursePage: true })
+                  }
+                >
+                  Add Course
+                </button>
+              </div>
+
+              {this.props.courses.length > 0 && (
+                <div className="col align-self-end">
+                  <TextInput
+                    name="filter"
+                    label=""
+                    placeholder="Filter by title"
+                    onChange={this.handleFilterCourse}
+                    value={this.state.filterValue}
+                  />
+                </div>
+              )}
+            </div>
 
             {this.props.courses.length > 0 && (
-              <>
-                <TextInput
-                  name="filter"
-                  label=""
-                  placeholder="Filter by title"
-                  onChange={this.handleFilterCourse}
-                  value={this.state.filterValue}
-                />
-
+              <div className="row">
                 <CourseList
-                  onDeleteClick={this.handleDeleteCourse}
                   courses={this.props.courses}
                   filterValue={this.state.filterValue}
+                  pagination={this.props.pagination}
+                  onDeleteClick={this.handleDeleteCourse}
+                  onPageClick={this.handlePageClick}
+                  onPreviousClick={this.handlePreviousClick}
+                  onNextClick={this.handleNextClick}
+                  onItemsPerPageChange={this.handleItemsPerPage}
                 />
-              </>
+              </div>
             )}
-          </>
+          </div>
         )}
       </>
     );
@@ -93,6 +141,7 @@ CoursesPage.propTypes = {
   courses: PropTypes.array.isRequired,
   actions: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
+  pagination: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -109,6 +158,7 @@ function mapStateToProps(state) {
           }),
     authors: state.authors,
     loading: state.apiCallsInProgress > 0,
+    pagination: state.pagination.courses,
   };
 }
 
@@ -118,6 +168,11 @@ function mapDispatchToProps(dispatch) {
       loadCourses: bindActionCreators(courseActions.loadCourses, dispatch),
       loadAuthors: bindActionCreators(authorActions.loadAuthors, dispatch),
       deleteCourse: bindActionCreators(courseActions.deleteCourse, dispatch),
+      gotoPage: bindActionCreators(courseActions.gotoPage, dispatch),
+      updateItemsPerPage: bindActionCreators(
+        courseActions.updateItemsPerPage,
+        dispatch
+      ),
     },
   };
 }
