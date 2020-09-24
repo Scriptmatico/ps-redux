@@ -3,7 +3,7 @@
   "description": "React and Redux Pluralsight course by Cory House",
   "scripts": {
     "start": "run-p start:dev start:api",
-    "start:dev": "webpack-dev-server --config webpack.config.dev.js --port 3000",
+    "start:dev": "webpack-dev-server --config webpack.config.dev.js --port 30000",
     "prestart:api": "node tools/createMockDb.js",
     "start:api": "node tools/apiServer.js",
     "test": "jest --watchAll",

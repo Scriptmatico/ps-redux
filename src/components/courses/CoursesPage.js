@@ -56,27 +56,22 @@ class CoursesPage extends React.Component {
   };
 
   handlePageClick = pageNumber => {
-    const { actions } = this.props;
-    actions.gotoPage(pageNumber);
-  };
-
-  handlePreviousClick = () => {
-    const { actions, pagination } = this.props;
-    pagination.activePage - 1 > 0 &&
-      actions.gotoPage(pagination.activePage - 1);
-  };
-
-  handleNextClick = () => {
     const { actions, pagination, courses } = this.props;
-    pagination.activePage + 1 <=
-      Math.ceil(courses.length / pagination.itemsPerPage) &&
-      actions.gotoPage(pagination.activePage + 1);
+    const totalPages = Math.ceil(courses.length / pagination.itemsPerPage);
+    if (pageNumber > 0 && pageNumber <= totalPages) {
+      actions.gotoPage(pageNumber);
+    }
   };
 
   handleItemsPerPage = e => {
     const { actions } = this.props;
     const totalItemsSelected = parseInt(e.target.value);
     actions.updateItemsPerPage(totalItemsSelected);
+  };
+
+  handleHeaderClick = headerSortKey => {
+    const { actions } = this.props;
+    actions.sortTable(headerSortKey);
   };
 
   render() {
@@ -121,11 +116,11 @@ class CoursesPage extends React.Component {
                   courses={this.props.courses}
                   filterValue={this.state.filterValue}
                   pagination={this.props.pagination}
+                  sorting={this.props.sorting}
                   onDeleteClick={this.handleDeleteCourse}
                   onPageClick={this.handlePageClick}
-                  onPreviousClick={this.handlePreviousClick}
-                  onNextClick={this.handleNextClick}
                   onItemsPerPageChange={this.handleItemsPerPage}
+                  onHeaderClick={this.handleHeaderClick}
                 />
               </div>
             )}
@@ -142,6 +137,7 @@ CoursesPage.propTypes = {
   actions: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
   pagination: PropTypes.object.isRequired,
+  sorting: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
@@ -158,7 +154,8 @@ function mapStateToProps(state) {
           }),
     authors: state.authors,
     loading: state.apiCallsInProgress > 0,
-    pagination: state.pagination.courses,
+    pagination: state.coursesView.pagination,
+    sorting: state.coursesView.sorting,
   };
 }
 
@@ -173,6 +170,7 @@ function mapDispatchToProps(dispatch) {
         courseActions.updateItemsPerPage,
         dispatch
       ),
+      sortTable: bindActionCreators(courseActions.sortCoursesTable, dispatch),
     },
   };
 }

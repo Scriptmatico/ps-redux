@@ -94,6 +94,11 @@ class AuthorsPage extends React.Component {
     actions.updateItemsPerPage(totalItemsSelected);
   };
 
+  handleHeaderClick = headerSortKey => {
+    const { actions } = this.props;
+    actions.sortTable(headerSortKey);
+  };
+
   render() {
     return (
       <>
@@ -136,10 +141,12 @@ class AuthorsPage extends React.Component {
                   authors={this.props.authors}
                   filterValue={this.state.filterValue}
                   pagination={this.props.pagination}
+                  sorting={this.props.sorting}
                   onPageClick={this.handlePageClick}
                   onNextClick={this.handleNextClick}
                   onPreviousClick={this.handlePreviousClick}
                   onItemsPerPageChange={this.handleItemsPerPage}
+                  onHeaderClick={this.handleHeaderClick}
                 />
               </div>
             )}
@@ -156,14 +163,16 @@ AuthorsPage.propTypes = {
   actions: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
   pagination: PropTypes.object.isRequired,
+  sorting: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
   return {
-    authors: state.authors,
-    courses: state.courses,
+    authors: [...state.authors],
+    courses: [...state.courses],
     loading: state.apiCallsInProgress > 0,
-    pagination: state.pagination.authors,
+    pagination: state.authorsView.pagination,
+    sorting: state.authorsView.sorting,
   };
 }
 
@@ -178,6 +187,7 @@ function mapDispatchToProps(dispatch) {
         authorActions.updateItemsPerPage,
         dispatch
       ),
+      sortTable: bindActionCreators(authorActions.sortAuthorsTable, dispatch),
     },
   };
 }

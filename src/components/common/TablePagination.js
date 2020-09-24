@@ -4,12 +4,11 @@ import PropTypes from 'prop-types';
 const TablePagination = ({
   pages,
   active = 1,
+  itemsPerPage,
   onPageClick,
-  onPrevious,
-  onNext,
   onItemsPerPageChange,
 }) => {
-  const itemsPerPageMenu = ['1', '5', '10', '15', '20', '100'];
+  const itemsPerPageMenu = ['5', '10', '15', '20', '100'];
   const pageElements = [...Array(pages).keys()].map(page => (
     <li
       key={page + 1}
@@ -28,22 +27,28 @@ const TablePagination = ({
   return (
     <div className="row">
       <div className="col align-self-start">
-        <ul className="p-2 pagination">
-          <li className="page-item">
-            <button className="page-link" onClick={onPrevious}>
+        <ul className="pagination">
+          <li className={active === 1 ? 'page-item disabled' : 'page-item'}>
+            <button
+              className="page-link"
+              onClick={() => onPageClick(active - 1)}
+            >
               <span aria-hidden="true">&laquo;</span>
             </button>
           </li>
           {pageElements}
-          <li>
-            <button className="page-link" onClick={onNext}>
+          <li className={active === pages ? 'page-item disabled' : 'page-item'}>
+            <button
+              className="page-link"
+              onClick={() => onPageClick(active + 1)}
+            >
               <span aria-hidden="true">&raquo;</span>
             </button>
           </li>
         </ul>
       </div>
       <div className="col align-self-end">
-        <ul className="p-2 pagination" style={{ float: 'right' }}>
+        <ul className="pagination" style={{ float: 'right' }}>
           <li>
             <span>Items per page:</span>
           </li>
@@ -51,7 +56,11 @@ const TablePagination = ({
             <span aria-hidden="true">&nbsp;&nbsp;&nbsp;</span>
           </li>
           <li>
-            <select className="custom-select" onChange={onItemsPerPageChange}>
+            <select
+              className="custom-select"
+              onChange={onItemsPerPageChange}
+              defaultValue={itemsPerPage}
+            >
               {itemsPerPageMenu.map(item => (
                 <option key={item} value={item}>
                   {item}
@@ -68,10 +77,9 @@ const TablePagination = ({
 TablePagination.propTypes = {
   pages: PropTypes.number.isRequired,
   onPageClick: PropTypes.func.isRequired,
-  onPrevious: PropTypes.func.isRequired,
-  onNext: PropTypes.func.isRequired,
   onItemsPerPageChange: PropTypes.func.isRequired,
   active: PropTypes.number,
+  itemsPerPage: PropTypes.number,
 };
 
 export default TablePagination;
