@@ -74,3 +74,15 @@ export function sortCoursesTable(sortKey) {
     dispatch({ type: types.SORTING_COURSES_SORT, sortKey });
   };
 }
+
+export const historyCourseCreated = courseTitle => dispatch =>
+  dispatch({ type: types.HISTORY_COURSES_CREATED, courseTitle });
+
+export const historyCourseDeleted = courseTitle => dispatch =>
+  dispatch({ type: types.HISTORY_COURSES_DELETED, courseTitle });
+
+export const historyCourseUpdated = courseTitle => dispatch =>
+  dispatch({ type: types.HISTORY_COURSES_UPDATED, courseTitle });
+
+export const historyCourseSelected = selected => dispath =>
+  dispath({ type: types.HISTORY_COURSES_SELECTED, selected });

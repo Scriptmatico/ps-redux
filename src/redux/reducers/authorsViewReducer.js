@@ -46,6 +46,45 @@ export default function authorsViewReducer(
         },
       };
 
+    case types.HISTORY_AUTHORS_CREATED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Created: ${action.authorName}`],
+        },
+      };
+
+    case types.HISTORY_AUTHORS_DELETED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Deleted: ${action.authorName}`],
+        },
+      };
+
+    case types.HISTORY_AUTHORS_UPDATED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Updated: ${action.authorName}`],
+        },
+      };
+
+    case types.HISTORY_AUTHORS_SELECTED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: action.selected,
+        },
+      };
+
     default:
       return state;
   }

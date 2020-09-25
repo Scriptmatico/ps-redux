@@ -2,7 +2,12 @@ import React, { useEffect, useState } from 'react';
 import AuthorForm from './AuthorForm';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { loadAuthors, saveAuthor } from '../../redux/actions/authorActions';
+import {
+  loadAuthors,
+  saveAuthor,
+  historyAuthorCreated,
+  historyAuthorUpdated,
+} from '../../redux/actions/authorActions';
 import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
 import { Prompt } from 'react-router-dom';
@@ -10,6 +15,8 @@ import { Prompt } from 'react-router-dom';
 const ManageAuthorPage = ({
   loadAuthors,
   saveAuthor,
+  historyAuthorCreated,
+  historyAuthorUpdated,
   authors,
   redirectTo404,
   history,
@@ -50,6 +57,10 @@ const ManageAuthorPage = ({
     saveAuthor(author)
       .then(() => {
         setFormSaved(true);
+        props.authorId
+          ? historyAuthorUpdated(author.name)
+          : historyAuthorCreated(author.name);
+
         history.push('/authors');
         toast.success('Author saved!');
       })
@@ -85,10 +96,13 @@ const ManageAuthorPage = ({
 };
 
 ManageAuthorPage.propTypes = {
+  authorId: PropTypes.string,
   author: PropTypes.object.isRequired,
   authors: PropTypes.array.isRequired,
   loadAuthors: PropTypes.func.isRequired,
   saveAuthor: PropTypes.func.isRequired,
+  historyAuthorCreated: PropTypes.func.isRequired,
+  historyAuthorUpdated: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   history: PropTypes.object.isRequired,
   redirectTo404: PropTypes.bool.isRequired,
@@ -100,13 +114,14 @@ const findAuthorById = (authors, authorId) =>
 const mapStateToProps = (state, ownProps) => {
   const authorId = ownProps.match.params.authorId;
   const author =
-    authorId && state.authors.length > 0
-      ? findAuthorById(state.authors, parseInt(authorId))
+    authorId && state.authors.present.length > 0
+      ? findAuthorById(state.authors.present, parseInt(authorId))
       : { id: null, name: '' };
 
   return {
+    authorId,
     author,
-    authors: state.authors,
+    authors: state.authors.present,
     loading: state.apiCallsInProgress > 0,
     redirectTo404: !author,
   };
@@ -115,6 +130,8 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispathToProps = {
   loadAuthors,
   saveAuthor,
+  historyAuthorCreated,
+  historyAuthorUpdated,
 };
 
 export default connect(mapStateToProps, mapDispathToProps)(ManageAuthorPage);

@@ -5,10 +5,11 @@ import { loadCourses } from '../../redux/actions/courseActions';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import AuthorList from './AuthorList';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
 import TextInput from '../common/TextInput';
+import { ActionCreators as UndoActionCreators } from 'redux-undo';
 
 class AuthorsPage extends React.Component {
   state = {
@@ -51,6 +52,7 @@ class AuthorsPage extends React.Component {
 
     try {
       await this.props.actions.deleteAuthor(author);
+      this.props.actions.historyAuthorDeleted(author.name);
     } catch (error) {
       toast.error('Delete failed. ' + error.message, { autoClose: false });
     }
@@ -97,6 +99,18 @@ class AuthorsPage extends React.Component {
   handleHeaderClick = headerSortKey => {
     const { actions } = this.props;
     actions.sortTable(headerSortKey);
+  };
+
+  handleHistoryJump = step => {
+    const { actions, authorsHistory } = this.props;
+    const jumpPast = -Math.abs(authorsHistory.selected - step);
+    const jumpFuture = Math.abs(authorsHistory.selected - step);
+
+    step < authorsHistory.selected
+      ? actions.jump(jumpPast)
+      : actions.jump(jumpFuture);
+
+    actions.historyAuthorSelected(step);
   };
 
   render() {
@@ -150,6 +164,26 @@ class AuthorsPage extends React.Component {
                 />
               </div>
             )}
+            <br />
+            <h4>Authors history:</h4>
+            <ul>
+              {this.props.authorsHistory.actions.map((item, index) => (
+                <li key={item}>
+                  <Link
+                    to="#"
+                    onClick={() => this.handleHistoryJump(index + 1)}
+                    style={{
+                      fontWeight:
+                        this.props.authorsHistory.selected === index + 1
+                          ? 'bold'
+                          : 'normal',
+                    }}
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </>
@@ -164,15 +198,17 @@ AuthorsPage.propTypes = {
   loading: PropTypes.bool.isRequired,
   pagination: PropTypes.object.isRequired,
   sorting: PropTypes.object.isRequired,
+  authorsHistory: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
   return {
-    authors: [...state.authors],
-    courses: [...state.courses],
+    authors: [...state.authors.present],
+    courses: [...state.courses.present],
     loading: state.apiCallsInProgress > 0,
     pagination: state.authorsView.pagination,
     sorting: state.authorsView.sorting,
+    authorsHistory: state.authorsView.history,
   };
 }
 
@@ -188,6 +224,23 @@ function mapDispatchToProps(dispatch) {
         dispatch
       ),
       sortTable: bindActionCreators(authorActions.sortAuthorsTable, dispatch),
+      jump: bindActionCreators(UndoActionCreators.jump, dispatch),
+      historyAuthorsCreated: bindActionCreators(
+        authorActions.historyAuthorCreated,
+        dispatch
+      ),
+      historyAuthorDeleted: bindActionCreators(
+        authorActions.historyAuthorDeleted,
+        dispatch
+      ),
+      historyAuthorUpdated: bindActionCreators(
+        authorActions.historyAuthorUpdated,
+        dispatch
+      ),
+      historyAuthorSelected: bindActionCreators(
+        authorActions.historyAuthorSelected,
+        dispatch
+      ),
     },
   };
 }

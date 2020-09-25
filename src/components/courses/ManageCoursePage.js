@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import { loadCourses, saveCourse } from '../../redux/actions/courseActions';
+import {
+  loadCourses,
+  saveCourse,
+  historyCourseCreated,
+  historyCourseUpdated,
+} from '../../redux/actions/courseActions';
 import { loadAuthors } from '../../redux/actions/authorActions';
 import PropTypes from 'prop-types';
 import CourseForm from './CourseForm';
@@ -15,6 +20,8 @@ export function ManageCoursePage({
   loadAuthors,
   loadCourses,
   saveCourse,
+  historyCourseCreated,
+  historyCourseUpdated,
   history,
   redirectTo404,
   ...props
@@ -75,6 +82,9 @@ export function ManageCoursePage({
     saveCourse(course)
       .then(() => {
         setFormSaved(true);
+        props.slug
+          ? historyCourseUpdated(course.title)
+          : historyCourseCreated(course.title);
         toast.success('Course saved.');
         history.push('/courses');
       })
@@ -105,12 +115,15 @@ export function ManageCoursePage({
 }
 
 ManageCoursePage.propTypes = {
+  slug: PropTypes.string,
   course: PropTypes.object.isRequired,
   authors: PropTypes.array.isRequired,
   courses: PropTypes.array.isRequired,
   loadAuthors: PropTypes.func.isRequired,
   loadCourses: PropTypes.func.isRequired,
   saveCourse: PropTypes.func.isRequired,
+  historyCourseCreated: PropTypes.func.isRequired,
+  historyCourseUpdated: PropTypes.func.isRequired,
   history: PropTypes.object.isRequired,
   loading: PropTypes.bool.isRequired,
   redirectTo404: PropTypes.bool.isRequired,
@@ -123,14 +136,15 @@ function getCourseBySlug(courses, slug) {
 function mapStateToProps(state, ownProps) {
   const slug = ownProps.match.params.slug;
   const course =
-    slug && state.courses.length > 0
-      ? getCourseBySlug(state.courses, slug)
+    slug && state.courses.present.length > 0
+      ? getCourseBySlug(state.courses.present, slug)
       : newCourse;
 
   return {
+    slug,
     course,
-    courses: state.courses,
-    authors: state.authors,
+    courses: state.courses.present,
+    authors: state.authors.present,
     loading: state.apiCallsInProgress > 0,
     redirectTo404: !course,
   };
@@ -140,6 +154,8 @@ const mapDispatchToProps = {
   loadCourses,
   loadAuthors,
   saveCourse,
+  historyCourseCreated,
+  historyCourseUpdated,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ManageCoursePage);

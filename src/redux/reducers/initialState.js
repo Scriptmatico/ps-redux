@@ -13,6 +13,10 @@ export default {
       startIndex: 0,
       activePage: 1,
     },
+    history: {
+      selected: 1,
+      actions: ['Initial state'],
+    },
   },
   authorsView: {
     sorting: {
@@ -24,6 +28,10 @@ export default {
       itemsPerPage: 5,
       startIndex: 0,
       activePage: 1,
+    },
+    history: {
+      selected: 1,
+      actions: ['Initial state'],
     },
   },
 };

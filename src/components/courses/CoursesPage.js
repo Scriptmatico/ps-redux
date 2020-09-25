@@ -5,10 +5,11 @@ import * as authorActions from '../../redux/actions/authorActions';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import CourseList from './CourseList';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import Spinner from '../common/Spinner';
 import { toast } from 'react-toastify';
 import TextInput from '../common/TextInput';
+import { ActionCreators as UndoActionCreators } from 'redux-undo';
 
 class CoursesPage extends React.Component {
   state = {
@@ -43,7 +44,9 @@ class CoursesPage extends React.Component {
     toast.success('Course deleted');
 
     try {
-      await this.props.actions.deleteCourse(course);
+      const { actions } = this.props;
+      await actions.deleteCourse(course);
+      actions.historyCourseDeleted(course.title);
     } catch (error) {
       this.fetchCourses();
       toast.error('Delete failed. ' + error.message, { autoClose: false });
@@ -72,6 +75,18 @@ class CoursesPage extends React.Component {
   handleHeaderClick = headerSortKey => {
     const { actions } = this.props;
     actions.sortTable(headerSortKey);
+  };
+
+  handleHistoryJump = step => {
+    const { actions, coursesHistory } = this.props;
+    const jumpPast = -Math.abs(coursesHistory.selected - step);
+    const jumpFuture = Math.abs(coursesHistory.selected - step);
+
+    step < coursesHistory.selected
+      ? actions.jump(jumpPast)
+      : actions.jump(jumpFuture);
+
+    actions.historyCourseSelected(step);
   };
 
   render() {
@@ -124,6 +139,26 @@ class CoursesPage extends React.Component {
                 />
               </div>
             )}
+            <br />
+            <h4>Courses history:</h4>
+            <ul>
+              {this.props.coursesHistory.actions.map((item, index) => (
+                <li key={item}>
+                  <Link
+                    to="#"
+                    onClick={() => this.handleHistoryJump(index + 1)}
+                    style={{
+                      fontWeight:
+                        this.props.coursesHistory.selected === index + 1
+                          ? 'bold'
+                          : 'normal',
+                    }}
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </>
@@ -138,24 +173,27 @@ CoursesPage.propTypes = {
   loading: PropTypes.bool.isRequired,
   pagination: PropTypes.object.isRequired,
   sorting: PropTypes.object.isRequired,
+  coursesHistory: PropTypes.object.isRequired,
 };
 
 function mapStateToProps(state) {
   return {
     courses:
-      state.authors.length === 0
+      state.authors.present.length === 0
         ? []
-        : state.courses.map(course => {
+        : state.courses.present.map(course => {
             return {
               ...course,
-              authorName: state.authors.find(a => a.id === course.authorId)
-                .name,
+              authorName: state.authors.present.find(
+                a => a.id === course.authorId
+              ).name,
             };
           }),
-    authors: state.authors,
+    authors: state.authors.present,
     loading: state.apiCallsInProgress > 0,
     pagination: state.coursesView.pagination,
     sorting: state.coursesView.sorting,
+    coursesHistory: state.coursesView.history,
   };
 }
 
@@ -171,6 +209,23 @@ function mapDispatchToProps(dispatch) {
         dispatch
       ),
       sortTable: bindActionCreators(courseActions.sortCoursesTable, dispatch),
+      jump: bindActionCreators(UndoActionCreators.jump, dispatch),
+      historyCourseCreated: bindActionCreators(
+        courseActions.historyCourseCreated,
+        dispatch
+      ),
+      historyCourseDeleted: bindActionCreators(
+        courseActions.historyCourseDeleted,
+        dispatch
+      ),
+      historyCourseUpdated: bindActionCreators(
+        courseActions.historyCourseUpdated,
+        dispatch
+      ),
+      historyCourseSelected: bindActionCreators(
+        courseActions.historyCourseSelected,
+        dispatch
+      ),
     },
   };
 }

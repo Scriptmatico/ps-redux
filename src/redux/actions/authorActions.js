@@ -74,3 +74,15 @@ export function sortAuthorsTable(sortKey) {
     dispatch({ type: types.SORTING_AUTHORS_SORT, sortKey });
   };
 }
+
+export const historyAuthorCreated = authorName => dispatch =>
+  dispatch({ type: types.HISTORY_AUTHORS_CREATED, authorName });
+
+export const historyAuthorDeleted = authorName => dispatch =>
+  dispatch({ type: types.HISTORY_AUTHORS_DELETED, authorName });
+
+export const historyAuthorUpdated = authorName => dispatch =>
+  dispatch({ type: types.HISTORY_AUTHORS_UPDATED, authorName });
+
+export const historyAuthorSelected = selected => dispath =>
+  dispath({ type: types.HISTORY_AUTHORS_SELECTED, selected });

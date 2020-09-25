@@ -58,7 +58,7 @@ const AuthorList = ({
                     </td>
                     <td>
                       <button
-                        className="btn btn-outline-danger"
+                        className="btn btn-danger"
                         onClick={() => onDeleteClick(author)}
                       >
                         Delete

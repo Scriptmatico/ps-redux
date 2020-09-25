@@ -46,6 +46,45 @@ export default function coursesViewReducer(
         },
       };
 
+    case types.HISTORY_COURSES_CREATED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Created: ${action.courseTitle}`],
+        },
+      };
+
+    case types.HISTORY_COURSES_DELETED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Deleted: ${action.courseTitle}`],
+        },
+      };
+
+    case types.HISTORY_COURSES_UPDATED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: state.history.actions.length + 1,
+          actions: [...state.history.actions, `Updated: ${action.courseTitle}`],
+        },
+      };
+
+    case types.HISTORY_COURSES_SELECTED:
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          selected: action.selected,
+        },
+      };
+
     default:
       return state;
   }
